@@ -13,6 +13,16 @@ const babelQuery = {
   presets: ['es2015', 'stage-0', 'react', 'react-hmre'],
 };
 
+const envVars = dotenv.config();
+const defines = Object.keys(envVars).reduce(
+  (obj, key) => {
+    // eslint-disable-next-line no-param-reassign
+    obj[key.toUpperCase()] = JSON.stringify(envVars[key]);
+    return obj;
+  },
+  {}
+);
+
 module.exports = {
   context: __dirname,
   entry: [path.resolve('./src/index.js'), 'webpack-hot-middleware/client'],
@@ -66,6 +76,7 @@ module.exports = {
     new webpack.optimize.OccurenceOrderPlugin(),
     new webpack.NoErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
+    new webpack.DefinePlugin(defines),
     new HtmlWebpackPlugin({
       title: 'My app',
       appMountId: 'root',
