@@ -68,7 +68,7 @@ module.exports = {
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
       title: 'My app',
-      template: 'index.html',
+      appMountId: 'root',
     }),
   ],
 };
