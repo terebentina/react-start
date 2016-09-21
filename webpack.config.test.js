@@ -1,6 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
+const dotenv = require('dotenv');
 const atImport = require('postcss-import');
 const postcssUrl = require('postcss-url');
 const discardComments = require('postcss-discard-comments');
@@ -10,16 +10,14 @@ const nested = require('postcss-nested');
 const reporter = require('postcss-reporter');
 
 const babelQuery = {
-  presets: ['es2015', 'stage-0', 'react', 'react-hmre'],
+  presets: ['es2015', 'stage-0', 'react'],
 };
 
-
-const env = ['NODE_ENV'];
-
-const defines = env.reduce(
+const envVars = dotenv.config();
+const defines = Object.keys(envVars).reduce(
   (obj, key) => {
     // eslint-disable-next-line no-param-reassign
-    obj[`process.env.${key}`] = JSON.stringify(process.env[key]);
+    obj[`process.env.${key.toUpperCase()}`] = JSON.stringify(envVars[key]);
     return obj;
   },
   {}
@@ -27,24 +25,30 @@ const defines = env.reduce(
 
 module.exports = {
   context: __dirname,
-  entry: [path.resolve('./src/index.js'), 'webpack-hot-middleware/client'],
+  entry: {
+    test: [path.join(__dirname, 'tests.bootstrap.js')],
+  },
   output: {
-    path: path.join(__dirname, 'build'),
+    path: path.join(__dirname, './build'),
     filename: '[name].js',
-    publicPath: '/',
-    pathinfo: true,
-    sourceMapFilename: '[name].map',
   },
   target: 'web',
-  devtool: 'cheap-module-eval-source-map',
+  resolve: {
+    extensions: ['', '.js', ''],
+    modulesDirectories: ['src', 'node_modules'],
+    root: path.resolve(__dirname, './src'),
+    alias: {
+      sinon: 'sinon/pkg/sinon',
+    },
+  },
   module: {
     loaders: [
       { test: /\.js$/, loader: 'babel', exclude: [/node_modules/, path.resolve(__dirname, './build')], query: babelQuery },
       { test: /\.css$/, loader: 'style!css?sourceMap&modules&importLoaders=1&localIdentName=[local]-[hash:base64:5]!postcss' },
     ],
-  },
-  resolve: {
-    modulesDirectories: ['node_modules', './src', './assets'],
+    noParse: [
+      /node_modules\/sinon\//,
+    ],
   },
   postcss: [
     atImport(), postcssUrl(),
@@ -77,14 +81,16 @@ module.exports = {
       clearMessages: true,
     }),
   ],
+  node: {
+    fs: 'empty',
+  },
   plugins: [
-    new webpack.optimize.OccurenceOrderPlugin(),
-    new webpack.NoErrorsPlugin(),
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin(defines),
-    new HtmlWebpackPlugin({
-      title: 'My app',
-      appMountId: 'root',
-    }),
   ],
+  externals: {
+    cheerio: 'window',
+    'react/lib/ExecutionEnvironment': true,
+    'react/lib/ReactContext': true,
+    'react/addons': true,
+  },
 };

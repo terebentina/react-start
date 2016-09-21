@@ -24,6 +24,15 @@
     "max-len": 0,
     "consistent-return": 0,
     "newline-per-chained-call": 0,
-    "global-require": 0
+    "global-require": 0,
+    "react/jsx-filename-extension": 0,
+    "import/no-extraneous-dependencies": 0,
+    "arrow-parens": ["error", "always"],
+    "react/forbid-prop-types": ["error", { "forbid": ["any", "array"] }]
+  },
+  "globals": {
+    "localStorage": true,
+    "document": true,
+    "window": true
   }
 }
